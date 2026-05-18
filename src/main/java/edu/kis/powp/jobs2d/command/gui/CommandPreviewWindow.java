@@ -18,6 +18,8 @@ public class CommandPreviewWindow extends JFrame implements WindowComponent {
     private JPanel previewPanel;
     private DrawPanelController previewDrawController;
     private VisitableDriver previewDriver;
+    private VisitableDriver backgroundDriver;
+    private DriverCommand backgroundCommand;
 
     public CommandPreviewWindow() {
         this.setTitle("Command Preview");
@@ -35,9 +37,19 @@ public class CommandPreviewWindow extends JFrame implements WindowComponent {
 
     public void updatePreview(DriverCommand command) {
         previewDrawController.clearPanel();
+        if (backgroundCommand != null) {
+            VisitableDriver driverToUse = backgroundDriver != null ? backgroundDriver : previewDriver;
+            if (driverToUse != null) {
+                backgroundCommand.execute(driverToUse);
+            }
+        }
         if (command != null && previewDriver != null) {
             command.execute(previewDriver);
         }
+    }
+
+    public void setBackgroundCommand(DriverCommand backgroundCommand) {
+        this.backgroundCommand = backgroundCommand;
     }
 
     public DrawPanelController getDrawPanelController() {
@@ -46,6 +58,10 @@ public class CommandPreviewWindow extends JFrame implements WindowComponent {
 
     public void setPreviewDriver(VisitableDriver previewDriver) {
         this.previewDriver = previewDriver;
+    }
+
+    public void setBackgroundDriver(VisitableDriver backgroundDriver) {
+        this.backgroundDriver = backgroundDriver;
     }
 
     @Override
