@@ -1,6 +1,7 @@
 package edu.kis.powp.jobs2d.features;
 
 import edu.kis.powp.appbase.Application;
+import edu.kis.powp.jobs2d.drivers.DriverDecorator;
 import edu.kis.powp.jobs2d.drivers.DriverManager;
 import edu.kis.powp.jobs2d.drivers.visitor.VisitableDriver;
 
@@ -25,6 +26,11 @@ public class ExtensionFeature implements IFeature {
 
     public static void addExtension(String name, VisitableDriver extension) {
         ExtensionToggleListener listener = new ExtensionToggleListener(driverManager, extension);
+        app.addComponentMenuElementWithCheckBox(ExtensionFeature.class, name, listener, listener.isEnabled());
+    }
+
+    public static void addDecoratorExtension(String name, DriverDecorator extension) {
+        DecoratorToggleListener listener = new DecoratorToggleListener(driverManager, extension);
         app.addComponentMenuElementWithCheckBox(ExtensionFeature.class, name, listener, listener.isEnabled());
     }
 

@@ -11,31 +11,24 @@ import edu.kis.powp.jobs2d.drivers.visitor.DriverVisitor;
 import edu.kis.powp.jobs2d.drivers.visitor.VisitableDriver;
 
 /**
- * Decorator driver that records all calls as command objects.
+ * Extension driver that records all calls as command objects.
  * Recording can be temporarily disabled (used during playback).
+ * Extends DriverDecorator so it can be used as a regular extension
+ * in ExtensionFeature — the innerDriver is injected by DriverManager.
  */
-public class RecordingDriver implements VisitableDriver {
+public class RecordingDriver extends DriverDecorator {
 
-    private VisitableDriver target;
     private final List<DriverCommand> recorded = new ArrayList<>();
     private boolean recordingEnabled = true;
 
-    public RecordingDriver(VisitableDriver initialTarget) {
-        this.target = initialTarget;
-    }
-
-    public synchronized void setTarget(VisitableDriver target) {
-        this.target = target;
-    }
-
-    public synchronized VisitableDriver getTarget() {
-        return target;
+    public RecordingDriver() {
+        super(null);
     }
 
     /**
      * Enable or disable recording of subsequent driver calls.
-     * When disabled, setPosition/operateTo will still delegate to the target
-     * but won't add commands to recorded list.
+     * When disabled, setPosition/operateTo will still delegate to the inner driver
+     * but won't add commands to the recorded list.
      */
     public synchronized void setRecordingEnabled(boolean enabled) {
         this.recordingEnabled = enabled;
@@ -58,7 +51,7 @@ public class RecordingDriver implements VisitableDriver {
         if (recordingEnabled) {
             recorded.add(new SetPositionCommand(x, y));
         }
-        target.setPosition(x, y);
+        super.setPosition(x, y);
     }
 
     @Override
@@ -66,12 +59,12 @@ public class RecordingDriver implements VisitableDriver {
         if (recordingEnabled) {
             recorded.add(new OperateToCommand(x, y));
         }
-        target.operateTo(x, y);
+        super.operateTo(x, y);
     }
 
     @Override
     public synchronized String toString() {
-        return "RecordingDriver -> " + target;
+        return "RecordingDriver -> " + getInnerDriver();
     }
 
     @Override
