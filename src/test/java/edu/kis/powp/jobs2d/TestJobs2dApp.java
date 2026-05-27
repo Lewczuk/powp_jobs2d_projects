@@ -15,10 +15,6 @@ import edu.kis.powp.jobs2d.command.gui.CommandPreviewWindow;
 import edu.kis.powp.jobs2d.drivers.usage.LoggerUsageMonitorSubscriber;
 import edu.kis.powp.jobs2d.drivers.usage.UsageMonitorDriver;
 import edu.kis.powp.jobs2d.features.*;
-import edu.kis.powp.jobs2d.features.history.HistoryWindow;
-import edu.kis.powp.jobs2d.features.history.HistoryWindowObserver;
-import edu.kis.powp.jobs2d.features.history.UpdateHistoryOnCommandChangeObserver;
-import edu.kis.powp.jobs2d.features.history.SizeLimitHistorySubscriber;
 import edu.kis.powp.jobs2d.drivers.RealTimeDriver;
 import edu.kis.powp.jobs2d.drivers.adapter.LineDriverAdapter;
 import edu.kis.powp.jobs2d.drivers.logger.TrackingLoggerDriver;
@@ -51,8 +47,6 @@ import edu.kis.powp.jobs2d.features.ExtensionFeature;
 import edu.kis.powp.jobs2d.features.FeaturesManager;
 import edu.kis.powp.jobs2d.features.RecordingFeature;
 import edu.kis.powp.jobs2d.features.MouseClickFeature;
-
-import javax.swing.JSpinner;
 
 public class TestJobs2dApp {
         private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -176,31 +170,6 @@ public class TestJobs2dApp {
                 CommandManagerWindowCommandChangeObserver windowObserver = new CommandManagerWindowCommandChangeObserver(
                                 commandManager);
                 CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(windowObserver);
-
-                HistoryWindow historyWindow = new HistoryWindow(HistoryFeature.getHistoryManager());
-                SizeLimitHistorySubscriber limitSubscriber = HistoryFeature.getSizeLimitSubscriber();
-                if (limitSubscriber != null) {
-                        historyWindow.setLimitValue(limitSubscriber.getMaxSize());
-                        historyWindow.addLimitChangeListener(e -> {
-                                JSpinner spinner = (JSpinner) e.getSource();
-                                limitSubscriber.setMaxSize((Integer) spinner.getValue());
-                        });
-                }
-                historyWindow.addLoadButtonListener(e -> {
-                        edu.kis.powp.jobs2d.features.history.HistoryEntry selected = historyWindow
-                                        .getSelectedHistoryEntry();
-                        if (selected != null && selected.getCommand() != null) {
-                                CommandsFeature.getDriverCommandManager().setCurrentCommand(selected.getCommand());
-                        }
-                });
-                application.addWindowComponent("History", historyWindow);
-
-                HistoryWindowObserver historyWindowObserver = new HistoryWindowObserver(historyWindow);
-                HistoryFeature.getHistoryManager().getChangePublisher().addSubscriber(historyWindowObserver);
-
-                UpdateHistoryOnCommandChangeObserver historyCommandObserver = new UpdateHistoryOnCommandChangeObserver(
-                                HistoryFeature.getHistoryManager(), CommandsFeature.getDriverCommandManager());
-                CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(historyCommandObserver);
 
                 CommandPreviewWindow commandPreview = new CommandPreviewWindow();
                 application.addWindowComponent("Command Preview", commandPreview);
