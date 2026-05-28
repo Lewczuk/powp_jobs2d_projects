@@ -24,7 +24,7 @@ public class HistoryWindow extends JFrame implements WindowComponent {
     private static final long serialVersionUID = 1L;
 
     public HistoryWindow(HistoryManager historyManager) {
-        this.setTitle("Application History");
+        this.setTitle("Command History");
         this.setSize(400, 400);
         Container content = this.getContentPane();
         content.setLayout(new GridBagLayout());
