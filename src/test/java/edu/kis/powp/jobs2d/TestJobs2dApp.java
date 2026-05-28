@@ -188,29 +188,26 @@ public class TestJobs2dApp {
                                 commandPreview);
                 CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(previewObserver);
 
-                VisitableDriver backgroundDriver = new LineDriverAdapter(previewDrawController, CanvasFeature.getGuidesLineType(),
-                "background");
+                VisitableDriver backgroundDriver = new LineDriverAdapter(previewDrawController,
+                                CanvasFeature.getGuidesLineType(),
+                                "background");
                 VisitableDriver scaledDownBackgroundDriver = new TransformingDriver(backgroundDriver, scaleDown,
-                        "Preview Transform: Scaled 0.5x Background");
+                                "Preview Transform: Scaled 0.5x Background");
                 commandPreview.setBackgroundDriver(scaledDownBackgroundDriver);
 
-                CommandPreviewObserver previewObserver = new CommandPreviewObserver(CommandsFeature.getDriverCommandManager(),
-                        commandPreview);
-                CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(previewObserver);
-
                 CanvasFeature.getChangePublisher().addSubscriber(() -> {
-                ICanvas canvas = CanvasFeature.getCanvas();
-                if (canvas != null) {
-                        commandPreview.setBackgroundCommand(canvas.toCommand());
-                } else {
-                        commandPreview.setBackgroundCommand(null);
-                }
-                commandPreview.updatePreview(CommandsFeature.getDriverCommandManager().getCurrentCommand());
+                        ICanvas canvas = CanvasFeature.getCanvas();
+                        if (canvas != null) {
+                                commandPreview.setBackgroundCommand(canvas.toCommand());
+                        } else {
+                                commandPreview.setBackgroundCommand(null);
+                        }
+                        commandPreview.updatePreview(CommandsFeature.getDriverCommandManager().getCurrentCommand());
                 });
 
                 ICanvas initialCanvas = CanvasFeature.getCanvas();
                 if (initialCanvas != null) {
-                commandPreview.setBackgroundCommand(initialCanvas.toCommand());
+                        commandPreview.setBackgroundCommand(initialCanvas.toCommand());
                 }
         }
 
