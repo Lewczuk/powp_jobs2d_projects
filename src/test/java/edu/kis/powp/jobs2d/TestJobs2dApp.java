@@ -8,11 +8,8 @@ import java.util.logging.Logger;
 import edu.kis.legacy.drawer.panel.DrawPanelController;
 import edu.kis.legacy.drawer.shape.LineFactory;
 import edu.kis.powp.appbase.Application;
-import edu.kis.powp.jobs2d.canvas.ICanvas;
 import edu.kis.powp.jobs2d.command.gui.CommandManagerWindow;
 import edu.kis.powp.jobs2d.command.gui.CommandManagerWindowCommandChangeObserver;
-import edu.kis.powp.jobs2d.command.gui.CommandPreviewObserver;
-import edu.kis.powp.jobs2d.command.gui.CommandPreviewWindow;
 import edu.kis.powp.jobs2d.drivers.usage.LoggerUsageMonitorSubscriber;
 import edu.kis.powp.jobs2d.drivers.usage.UsageMonitorDriver;
 import edu.kis.powp.jobs2d.features.*;
@@ -20,10 +17,9 @@ import edu.kis.powp.jobs2d.drivers.RealTimeDriver;
 import edu.kis.powp.jobs2d.drivers.adapter.LineDriverAdapter;
 import edu.kis.powp.jobs2d.drivers.logger.TrackingLoggerDriver;
 import edu.kis.powp.jobs2d.drivers.packet_composite.CompositeDriver;
-import edu.kis.powp.jobs2d.drivers.transformations.CoordinateTransformer;
 import edu.kis.powp.jobs2d.drivers.transformations.FlipTransformer;
 import edu.kis.powp.jobs2d.drivers.transformations.RotateTransformer;
-import edu.kis.powp.jobs2d.drivers.transformations.ScaleTransformer;
+import edu.kis.powp.jobs2d.drivers.transformations.TransformerFactory;
 import edu.kis.powp.jobs2d.drivers.transformations.TransformingDriver;
 import edu.kis.powp.jobs2d.drivers.visitor.FullNameGetterVisitor;
 import edu.kis.powp.jobs2d.drivers.visitor.VisitableDriver;
@@ -87,9 +83,9 @@ public class TestJobs2dApp {
 
                 application.addTest("Check current command bounds", new SelectCheckCanvasBoundsOptionListener());
                 application.addTest("Transform current command: Scale 2x",
-                                new SelectTransformCommandOptionListener(new ScaleTransformer(2.0, 2.0), "Scale 2x"));
+                                new SelectTransformCommandOptionListener(TransformerFactory.getScaleTransformer(2.0), "Scale 2x"));
                 application.addTest("Transform current command: Scale 0.5x",
-                                new SelectTransformCommandOptionListener(new ScaleTransformer(0.5, 0.5), "Scale 0.5x"));
+                                new SelectTransformCommandOptionListener(TransformerFactory.getScaleTransformer(TransformerFactory.DOUBLE_ZOOM_OUT), "Scale 0.5x"));
                 application.addTest("Transform current command: Rotate 45 degrees",
                                 new SelectTransformCommandOptionListener(new RotateTransformer(45.0),
                                                 "Rotate 45 degrees"));
@@ -136,11 +132,11 @@ public class TestJobs2dApp {
 
                 ExtensionFeature.addDecoratorExtension("Recording", RecordingFeature.getRecordingDriver());
 
-                TransformingDriver transformExt = new TransformingDriver(new ScaleTransformer(2.0, 2.0),
+                TransformingDriver transformExt = new TransformingDriver(TransformerFactory.getScaleTransformer(2.0),
                                 "Transform: Scaled 2x");
                 ExtensionFeature.addDecoratorExtension("Scale 2x", transformExt);
 
-                TransformingDriver scaledDownDriver = new TransformingDriver(new ScaleTransformer(0.5, 0.5),
+                TransformingDriver scaledDownDriver = new TransformingDriver(TransformerFactory.getScaleTransformer(TransformerFactory.DOUBLE_ZOOM_OUT),
                                 "Transform: Scaled 0.5x");
                 ExtensionFeature.addDecoratorExtension("Scale 0.5x", scaledDownDriver);
 
@@ -171,44 +167,6 @@ public class TestJobs2dApp {
                 CommandManagerWindowCommandChangeObserver windowObserver = new CommandManagerWindowCommandChangeObserver(
                                 commandManager);
                 CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(windowObserver);
-
-                CommandPreviewWindow commandPreview = new CommandPreviewWindow();
-                application.addWindowComponent("Command Preview", commandPreview);
-
-                DrawPanelController previewDrawController = commandPreview.getDrawPanelController();
-                VisitableDriver basicDriver = new LineDriverAdapter(previewDrawController, LineFactory.getBasicLine(),
-                                "basic");
-                CoordinateTransformer scaleDown = new ScaleTransformer(0.5, 0.5);
-                VisitableDriver scaledDownDriver = new TransformingDriver(basicDriver, scaleDown,
-                                "Preview Transform: Scaled 0.5x");
-                commandPreview.setPreviewDriver(scaledDownDriver);
-
-                CommandPreviewObserver previewObserver = new CommandPreviewObserver(
-                                CommandsFeature.getDriverCommandManager(),
-                                commandPreview);
-                CommandsFeature.getDriverCommandManager().getChangePublisher().addSubscriber(previewObserver);
-
-                VisitableDriver backgroundDriver = new LineDriverAdapter(previewDrawController,
-                                CanvasFeature.getGuidesLineType(),
-                                "background");
-                VisitableDriver scaledDownBackgroundDriver = new TransformingDriver(backgroundDriver, scaleDown,
-                                "Preview Transform: Scaled 0.5x Background");
-                commandPreview.setBackgroundDriver(scaledDownBackgroundDriver);
-
-                CanvasFeature.getChangePublisher().addSubscriber(() -> {
-                        ICanvas canvas = CanvasFeature.getCanvas();
-                        if (canvas != null) {
-                                commandPreview.setBackgroundCommand(canvas.toCommand());
-                        } else {
-                                commandPreview.setBackgroundCommand(null);
-                        }
-                        commandPreview.updatePreview(CommandsFeature.getDriverCommandManager().getCurrentCommand());
-                });
-
-                ICanvas initialCanvas = CanvasFeature.getCanvas();
-                if (initialCanvas != null) {
-                        commandPreview.setBackgroundCommand(initialCanvas.toCommand());
-                }
         }
 
         /**
@@ -250,6 +208,7 @@ public class TestJobs2dApp {
                                 FeaturesManager.registerFeature(new CanvasFeature());
                                 FeaturesManager.registerFeature(new MouseClickFeature());
                                 FeaturesManager.registerFeature(new HistoryFeature());
+                                FeaturesManager.registerFeature(new PreviewFeature());
 
                                 // Automatycznie skonfiguruj wszystkie zarejestrowane funkcje
                                 // To zastępuje ręczne wywołania setup dla każdej funkcji
